@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Сам себе финансист</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #E8C97A;
+    --gold-dim: #8B6914;
+    --black: #0A0A0A;
+    --black-soft: #111111;
+    --black-card: #141414;
+    --black-border: #1E1E1E;
+    --white: #F5F0E8;
+    --white-dim: #B0A898;
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --sans: 'Montserrat', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: var(--sans);
+    font-weight: 300;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ── NOISE TEXTURE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 999;
+    opacity: 0.4;
+  }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--black); }
+  ::-webkit-scrollbar-thumb { background: var(--gold-dim); border-radius: 2px; }
+
+  /* ── GOLD LINE DIVIDER ── */
+  .gold-line {
+    width: 60px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 0 auto;
+  }
+  .gold-line-left {
+    width: 40px;
+    height: 1px;
+    background: linear-gradient(90deg, var(--gold), transparent);
+    margin-bottom: 1.5rem;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 4rem 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -30%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(ellipse, rgba(201,168,76,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-eyebrow {
+    font-family: var(--sans);
+    font-size: 0.65rem;
+    font-weight: 500;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 2rem;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.2s forwards;
+  }
+
+  .hero h1 {
+    font-family: var(--serif);
+    font-size: clamp(3.5rem, 9vw, 7rem);
+    font-weight: 300;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    color: var(--white);
+    margin-bottom: 1rem;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.4s forwards;
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .hero-sub {
+    font-size: 0.8rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--white-dim);
+    margin-top: 1.5rem;
+    margin-bottom: 3rem;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.6s forwards;
+  }
+
+  .hero-tagline {
+    font-family: var(--serif);
+    font-size: clamp(1rem, 2vw, 1.25rem);
+    font-weight: 300;
+    font-style: italic;
+    color: var(--white-dim);
+    max-width: 480px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.8s forwards;
+  }
+
+  .hero-scroll {
+    position: absolute;
+    bottom: 2.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    opacity: 0;
+    animation: fadeUp 0.8s 1.2s forwards;
+  }
+
+  .hero-scroll span {
+    font-size: 0.6rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+  }
+
+  .scroll-line {
+    width: 1px;
+    height: 40px;
+    background: linear-gradient(to bottom, var(--gold), transparent);
+    animation: scrollPulse 2s infinite;
+  }
+
+  /* ── SECTION WRAPPER ── */
+  .section {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 6rem 2rem;
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+
+  .section.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ── SECTION HEADER ── */
+  .section-num {
+    font-size: 0.6rem;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.75rem;
+    font-weight: 500;
+  }
+
+  .section-title {
+    font-family: var(--serif);
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 300;
+    line-height: 1.15;
+    color: var(--white);
+    margin-bottom: 3rem;
+  }
+
+  .section-title em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  /* ── PAIN CARDS (hero section) ── */
+  .pain-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1px;
+    background: var(--black-border);
+    border: 1px solid var(--black-border);
+    margin: 3rem 0;
+  }
+
+  .pain-card {
+    background: var(--black-card);
+    padding: 2rem 1.75rem;
+    position: relative;
+    transition: background 0.3s;
+  }
+
+  .pain-card:hover {
+    background: #1a1a1a;
+  }
+
+  .pain-card::before {
+    content: '"';
+    font-family: var(--serif);
+    font-size: 5rem;
+    color: var(--gold);
+    opacity: 0.15;
+    position: absolute;
+    top: 0.5rem;
+    left: 1.25rem;
+    line-height: 1;
+  }
+
+  .pain-card p {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 1.05rem;
+    color: var(--white-dim);
+    line-height: 1.6;
+  }
+
+  /* ── MYTH BLOCKS ── */
+  .myth-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .myth-item {
+    padding: 2.5rem 0;
+    border-bottom: 1px solid var(--black-border);
+    display: grid;
+    grid-template-columns: 3rem 1fr;
+    gap: 1.5rem;
+    align-items: start;
+  }
+
+  .myth-num {
+    font-family: var(--serif);
+    font-size: 2.5rem;
+    font-weight: 300;
+    color: var(--gold);
+    opacity: 0.4;
+    line-height: 1;
+    padding-top: 0.15rem;
+  }
+
+  .myth-title {
+    font-family: var(--serif);
+    font-size: 1.2rem;
+    font-weight: 400;
+    color: var(--gold-light);
+    margin-bottom: 0.75rem;
+  }
+
+  .myth-text {
+    font-size: 0.85rem;
+    color: var(--white-dim);
+    line-height: 1.8;
+  }
+
+  /* ── PROBLEM BLOCKS ── */
+  .problem-block {
+    border: 1px solid var(--black-border);
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+  }
+
+  .problem-header {
+    padding: 1.75rem 2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    background: var(--black-card);
+    transition: background 0.3s;
+  }
+
+  .problem-header:hover {
+    background: #191919;
+  }
+
+  .problem-header.open {
+    background: #181510;
+    border-bottom: 1px solid var(--black-border);
+  }
+
+  .problem-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 1px solid var(--gold-dim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-family: var(--serif);
+    font-size: 0.9rem;
+    color: var(--gold);
+    font-weight: 400;
+  }
+
+  .problem-title {
+    font-family: var(--serif);
+    font-size: 1.15rem;
+    font-weight: 400;
+    color: var(--white);
+    flex: 1;
+  }
+
+  .problem-arrow {
+    color: var(--gold-dim);
+    font-size: 0.8rem;
+    transition: transform 0.3s;
+    flex-shrink: 0;
+  }
+
+  .problem-header.open .problem-arrow {
+    transform: rotate(180deg);
+  }
+
+  .problem-body {
+    display: none;
+    padding: 2rem;
+    background: var(--black-card);
+  }
+
+  .problem-body.open {
+    display: block;
+    animation: slideDown 0.3s ease;
+  }
+
+  .problem-what {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 0.95rem;
+    color: var(--white-dim);
+    margin-bottom: 1.25rem;
+    padding-left: 1rem;
+    border-left: 2px solid var(--gold-dim);
+  }
+
+  .problem-why {
+    font-size: 0.82rem;
+    color: var(--white-dim);
+    margin-bottom: 1.5rem;
+    line-height: 1.8;
+  }
+
+  .steps-title {
+    font-size: 0.6rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 1rem;
+    font-weight: 500;
+  }
+
+  .steps-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .steps-list li {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    font-size: 0.82rem;
+    color: var(--white-dim);
+    line-height: 1.7;
+  }
+
+  .step-dot {
+    width: 18px;
+    height: 18px;
+    border: 1px solid var(--gold-dim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.55rem;
+    color: var(--gold);
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+    font-weight: 500;
+  }
+
+  .limit-box {
+    border: 1px solid #2a2000;
+    background: #110e00;
+    padding: 1rem 1.25rem;
+    font-size: 0.78rem;
+    color: #9a8040;
+    line-height: 1.7;
+  }
+
+  .limit-box strong {
+    color: var(--gold-dim);
+    font-weight: 500;
+    display: block;
+    margin-bottom: 0.25rem;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
+  /* ── DIAGNOSTIC ── */
+  .diagnostic-intro {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 1.1rem;
+    color: var(--white-dim);
+    margin-bottom: 2.5rem;
+    line-height: 1.7;
+  }
+
+  .diag-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .diag-item {
+    padding: 1.1rem 0;
+    border-bottom: 1px solid var(--black-border);
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .diag-item:hover {
+    background: rgba(201,168,76,0.03);
+  }
+
+  .diag-check {
+    width: 20px;
+    height: 20px;
+    border: 1px solid var(--gold-dim);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+
+  .diag-item.checked .diag-check {
+    background: var(--gold);
+    border-color: var(--gold);
+  }
+
+  .diag-check svg {
+    display: none;
+  }
+
+  .diag-item.checked .diag-check svg {
+    display: block;
+  }
+
+  .diag-text {
+    font-size: 0.85rem;
+    color: var(--white-dim);
+    line-height: 1.6;
+    flex: 1;
+  }
+
+  .diag-score {
+    margin-top: 2.5rem;
+    padding: 1.75rem 2rem;
+    border: 1px solid var(--black-border);
+    background: var(--black-card);
+  }
+
+  .score-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+  }
+
+  .score-number {
+    font-family: var(--serif);
+    font-size: 3.5rem;
+    font-weight: 300;
+    color: var(--gold);
+    line-height: 1;
+    margin-bottom: 0.75rem;
+  }
+
+  .score-result {
+    font-size: 0.85rem;
+    color: var(--white-dim);
+    line-height: 1.7;
+  }
+
+  /* ── 7-DAY PLAN ── */
+  .days-grid {
+    display: grid;
+    gap: 1px;
+    background: var(--black-border);
+    border: 1px solid var(--black-border);
+  }
+
+  .day-item {
+    background: var(--black-card);
+    padding: 1.5rem 1.75rem;
+    display: grid;
+    grid-template-columns: 4rem 1fr;
+    gap: 1.25rem;
+    align-items: start;
+    transition: background 0.3s;
+  }
+
+  .day-item:hover {
+    background: #181818;
+  }
+
+  .day-num {
+    font-family: var(--serif);
+    font-size: 0.65rem;
+    color: var(--gold-dim);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding-top: 0.1rem;
+  }
+
+  .day-num span {
+    display: block;
+    font-size: 2rem;
+    font-weight: 300;
+    color: var(--gold);
+    letter-spacing: -0.02em;
+    line-height: 1;
+    margin-top: 0.15rem;
+  }
+
+  .day-text {
+    font-size: 0.85rem;
+    color: var(--white-dim);
+    line-height: 1.7;
+    padding-top: 0.6rem;
+  }
+
+  /* ── BREAKDOWN SECTION ── */
+  .breakdown-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-top: 1rem;
+  }
+
+  .breakdown-item {
+    padding: 1.75rem 2rem;
+    border: 1px solid var(--black-border);
+    background: var(--black-card);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .breakdown-item::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--gold-dim), transparent);
+  }
+
+  .breakdown-title {
+    font-family: var(--serif);
+    font-size: 1rem;
+    font-weight: 400;
+    color: var(--gold-light);
+    margin-bottom: 0.6rem;
+  }
+
+  .breakdown-text {
+    font-size: 0.82rem;
+    color: var(--white-dim);
+    line-height: 1.8;
+  }
+
+  /* ── OFFER ── */
+  .offer-block {
+    background: var(--black-card);
+    border: 1px solid var(--black-border);
+    position: relative;
+    overflow: hidden;
+    padding: 3.5rem;
+  }
+
+  .offer-block::before {
+    content: '';
+    position: absolute;
+    top: -100px;
+    right: -100px;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(ellipse, rgba(201,168,76,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .offer-for-title {
+    font-size: 0.6rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+  }
+
+  .offer-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .offer-list li {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    font-size: 0.85rem;
+    color: var(--white-dim);
+    line-height: 1.6;
+  }
+
+  .offer-list li::before {
+    content: '—';
+    color: var(--gold-dim);
+    flex-shrink: 0;
+  }
+
+  .offer-divider {
+    height: 1px;
+    background: var(--black-border);
+    margin: 2rem 0;
+  }
+
+  .offer-get-title {
+    font-family: var(--serif);
+    font-size: 1.3rem;
+    font-weight: 300;
+    color: var(--white);
+    margin-bottom: 1.5rem;
+  }
+
+  .offer-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 2rem;
+    background: transparent;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    font-family: var(--sans);
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-decoration: none;
+    margin-top: 2rem;
+  }
+
+  .offer-cta:hover {
+    background: var(--gold);
+    color: var(--black);
+  }
+
+  .offer-cta:hover .cta-arrow {
+    transform: translateX(4px);
+  }
+
+  .cta-arrow {
+    transition: transform 0.3s;
+  }
+
+  /* ── CLOSING ── */
+  .closing {
+    text-align: center;
+    padding: 8rem 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .closing::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 400px;
+    height: 200px;
+    background: radial-gradient(ellipse, rgba(201,168,76,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .closing-quote {
+    font-family: var(--serif);
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    font-weight: 300;
+    font-style: italic;
+    color: var(--white);
+    max-width: 600px;
+    margin: 0 auto 3rem;
+    line-height: 1.4;
+  }
+
+  .closing-quote em {
+    color: var(--gold);
+    font-style: normal;
+  }
+
+  .closing-sub {
+    font-size: 0.78rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--white-dim);
+    margin-bottom: 3rem;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--black-border);
+    padding: 2rem;
+    text-align: center;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    color: var(--black-border);
+    text-transform: uppercase;
+  }
+
+  /* ── SEPARATOR ── */
+  .ornament {
+    text-align: center;
+    padding: 2rem 0;
+    color: var(--gold-dim);
+    font-size: 0.7rem;
+    letter-spacing: 0.6em;
+    opacity: 0.5;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes scrollPulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 640px) {
+    .offer-block { padding: 2rem 1.5rem; }
+    .pain-grid { grid-template-columns: 1fr; }
+    .myth-item { grid-template-columns: 2rem 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+  <p class="hero-eyebrow">Практический гайд для экспертов и предпринимателей</p>
+  <h1>Сам себе<br><em>финансист</em></h1>
+  <p class="hero-sub">Финансы · Учёт · Прибыль · Контроль</p>
+  <p class="hero-tagline">Когда ты видишь правду в цифрах — ты принимаешь решения спокойно</p>
+  <div class="hero-scroll">
+    <span>листать</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- SECTION 1: УЗНАЙ СЕБЯ -->
+<div class="section">
+  <p class="section-num">— 01 / Узнай себя</p>
+  <h2 class="section-title">Это<br><em>про тебя?</em></h2>
+
+  <div class="pain-grid">
+    <div class="pain-card"><p>Деньги есть — куда уходят, непонятно</p></div>
+    <div class="pain-card"><p>Выручка растёт, а денег на счету всё меньше</p></div>
+    <div class="pain-card"><p>Запуск провела — прибыль на бумаге, не в кармане</p></div>
+    <div class="pain-card"><p>Страшно смотреть в финансы — вдруг окажется, что работаю в минус</p></div>
+  </div>
+
+  <p style="font-family: var(--serif); font-style: italic; font-size: 1.05rem; color: var(--white-dim); line-height: 1.8; margin-top: 2rem;">
+    Если хоть что-то кольнуло — ты попал(а) по адресу. Финансы — это как здоровье. Пока не болит, мы не думаем. Когда заболело — уже лечить дороже.
+  </p>
+</div>
+
+<div class="ornament">✦ &nbsp; ✦ &nbsp; ✦</div>
+
+<!-- SECTION 2: МИФЫ -->
+<div class="section">
+  <p class="section-num">— 02 / Разрушение иллюзий</p>
+  <h2 class="section-title">Три мифа, которые<br><em>стоят тебе денег</em></h2>
+
+  <div class="myth-list">
+    <div class="myth-item">
+      <div class="myth-num">1</div>
+      <div>
+        <div class="myth-title">«Я веду учёт в голове — этого достаточно»</div>
+        <p class="myth-text">Голова — не таблица. Она запоминает крупные суммы и забывает мелкие. А мелкие — подписки, комиссии сервисов, налоги, проценты — в сумме за год могут составить 15–25% от выручки. Ты об этом не думаешь, пока не посчитаешь.</p>
+      </div>
+    </div>
+    <div class="myth-item">
+      <div class="myth-num">2</div>
+      <div>
+        <div class="myth-title">«Есть прибыль на бумаге — значит, деньги есть»</div>
+        <p class="myth-text">Прибыль и деньги на счету — два разных мира. Провела курс в мае, получила оплату — но услугу оказываешь два месяца. Значит, выручку нужно делить. А расходы уже списались. Итог: по отчёту прибыль есть, в реальности — кассовый разрыв.</p>
+      </div>
+    </div>
+    <div class="myth-item">
+      <div class="myth-num">3</div>
+      <div>
+        <div class="myth-title">«Вырасту в выручке — всё решится само»</div>
+        <p class="myth-text">Рост выручки без контроля расходов — это как добавить воды в дырявый таз. Больше зарабатываешь — больше тратишь, причём часто непропорционально. Расходы растут быстрее доходов, если не следить.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="ornament">✦ &nbsp; ✦ &nbsp; ✦</div>
+
+<!-- SECTION 3: ПРОБЛЕМЫ -->
+<div class="section">
+  <p class="section-num">— 03 / Решения</p>
+  <h2 class="section-title">Семь проблем<br><em>и что с ними делать</em></h2>
+
+  <!-- Block 1 -->
+  <div class="problem-block">
+    <div class="problem-header" onclick="toggleBlock(this)">
+      <div class="problem-icon">01</div>
+      <div class="problem-title">Финансовая модель существует только в голове</div>
+      <div class="problem-arrow">▼</div>
+    </div>
+    <div class="problem-body">
+      <p class="problem-what">Ты примерно знаешь, сколько хочешь зарабатывать. Но нет цифры: сколько именно нужно клиентов, по какой цене, чтобы получить нужную прибыль.</p>
+      <p class="problem-why">Без модели ты работаешь на ощущениях. Кажется, всё идёт нормально — до момента, когда деньги заканчиваются или ты выгораешь без видимой причины.</p>
+      <div class="steps-title">Что делать</div>
+      <ul class="steps-list">
+        <li><div class="step-dot">1</div>Запиши, сколько ты хочешь получать лично «в карман» в месяц</li>
+        <li><div class="step-dot">2</div>Посчитай все расходы на бизнес: сервисы, реклама, налоги, комиссии платёжных систем (3–4%), подписки</li>
+        <li><div class="step-dot">3</div>Сложи желаемый доход + расходы = нужная выручка</li>
+        <li><div class="step-dot">4</div>Раздели на средний чек → получишь количество клиентов</li>
+      </ul>
+      <div class="limit-box"><strong>Где упрёшься</strong>Когда дойдёшь до вопроса «откуда возьмутся эти клиенты» — там и начинается настоящая работа. Финансовая модель без маркетинговой воронки — красивая таблица без результата.</div>
+    </div>
+  </div>
+
+  <!-- Block 2 -->
+  <div class="problem-block">
+    <div class="problem-header" onclick="toggleBlock(this)">
+      <div class="problem-icon">02</div>
+      <div class="problem-title">Не понимаю, когда считать выручку</div>
+      <div class="problem-arrow">▼</div>
+    </div>
+    <div class="problem-body">
+      <p class="problem-what">Человек купил курс в мае, заплатил сразу. Курс идёт два месяца. Когда ставить выручку — в мае или делить?</p>
+      <p class="problem-why">Если ставишь всё в момент оплаты — получаешь искажённую картину. В месяце запуска всё отлично, в следующем — пусто. Именно так возникают кассовые разрывы.</p>
+      <div class="steps-title">Что делать</div>
+      <ul class="steps-list">
+        <li><div class="step-dot">1</div>Разберись: как написано в оферте — в момент доступа или по мере оказания услуги?</li>
+        <li><div class="step-dot">2</div>Если открываешь курс постепенно — дели выручку по месяцам пропорционально</li>
+        <li><div class="step-dot">3</div>В ДДС ставь реальные поступления; в отчёте о прибылях — по мере оказания услуги</li>
+      </ul>
+      <div class="limit-box"><strong>Где упрёшься</strong>Разница между ДДС и P&L (прибылью) на практике путает почти всех. Без понимания этой разницы финансовая модель будет давать неверные сигналы.</div>
+    </div>
+  </div>
+
+  <!-- Block 3 -->
+  <div class="problem-block">
+    <div class="problem-header" onclick="toggleBlock(this)">
+      <div class="problem-icon">03</div>
+      <div class="problem-title">Занижаю расходы или забываю про них</div>
+      <div class="problem-arrow">▼</div>
+    </div>
+    <div class="problem-body">
+      <p class="problem-what">В таблице только «большие» статьи. Интернет, Telegram Premium, комиссии, налоги, сервисы для рассылок — «как будто не считается».</p>
+      <p class="problem-why">Именно «мелкие» расходы съедают реальную прибыль. Плюс — если не закладываешь расходы на будущее, они появляются неожиданно и ломают бюджет.</p>
+      <div class="steps-title">Что делать</div>
+      <ul class="steps-list">
+        <li><div class="step-dot">1</div>Пройдись по выписке с расчётного счёта за последние 3 месяца</li>
+        <li><div class="step-dot">2</div>Выпиши всё, что уходит регулярно — включая копеечные подписки</li>
+        <li><div class="step-dot">3</div>Добавь статьи «на будущее»: ассистент, реклама, налоги (самозанятые 4–6%, ИП на УСН — уточни)</li>
+        <li><div class="step-dot">4</div>Заложи расходы на привлечение: стоимость клиента в разных нишах от 700 до 15 000 ₽</li>
+      </ul>
+      <div class="limit-box"><strong>Где упрёшься</strong>Полная картина расходов часто становится неприятным открытием. Хорошая новость: лучше увидеть это в таблице, чем почувствовать на счету.</div>
+    </div>
+  </div>
+
+  <!-- Block 4 -->
+  <div class="problem-block">
+    <div class="problem-header" onclick="toggleBlock(this)">
+      <div class="problem-icon">04</div>
+      <div class="problem-title">Нет понимания, откуда придут клиенты</div>
+      <div class="problem-arrow">▼</div>
+    </div>
+    <div class="problem-body">
+      <p class="problem-what">Финансовая модель построена, цифры красивые. Но вопрос «откуда 10 клиентов по 25 000 ₽» — висит в воздухе.</p>
+      <p class="problem-why">Без ответа на этот вопрос модель — просто фантазия. За каждым клиентом стоит либо вложенное время, либо вложенные деньги.</p>
+      <div class="steps-title">Что делать</div>
+      <ul class="steps-list">
+        <li><div class="step-dot">1</div>Запиши конкретные каналы: выступления, рекомендации, соцсети, реклама</li>
+        <li><div class="step-dot">2</div>Оцифруй: сколько человек через каждый канал приходит в месяц</li>
+        <li><div class="step-dot">3</div>Посчитай конверсию: сколько нужно охвата, чтобы получить 1 продажу</li>
+        <li><div class="step-dot">4</div>Для платного трафика: заложи стоимость привлечения клиента в расходы</li>
+      </ul>
+      <div class="limit-box"><strong>Где упрёшься</strong>На старте с бесплатным продвижением можно набрать первых клиентов. При масштабировании без системы привлечения бизнес упирается в потолок.</div>
+    </div>
+  </div>
+
+  <!-- Block 5 -->
+  <div class="problem-block">
+    <div class="problem-header" onclick="toggleBlock(this)">
+      <div class="problem-icon">05</div>
+      <div class="problem-title">Не разделяю деньги бизнеса и личные</div>
+      <div class="problem-arrow">▼</div>
+    </div>
+    <div class="problem-body">
+      <p class="problem-what">Пришли деньги — взяла на себя. Нужно оплатить сервис — с той же карты. Непонятно: бизнес прибыльный или нет?</p>
+      <p class="problem-why">Без разделения невозможно честно оценить, работает ли бизнес. Можно «тянуть» проект на личные деньги и не замечать этого.</p>
+      <div class="steps-title">Что делать</div>
+      <ul class="steps-list">
+        <li><div class="step-dot">1</div>Открой отдельный расчётный счёт для бизнеса</li>
+        <li><div class="step-dot">2</div>Назначь себе «зарплату» — фиксированную сумму раз в месяц</li>
+        <li><div class="step-dot">3</div>Всё остальное — расходы бизнеса и его прибыль</li>
+      </ul>
+      <div class="limit-box"><strong>Где упрёшься</strong>Выбор банка и системы налогообложения лучше решать с консультантом — условия сильно отличаются (комиссии, тарифы, эквайринг). Разброс — от 0 до 4% с оборота.</div>
+    </div>
+  </div>
+
+  <!-- Block 6 -->
+  <div class="problem-block">
+    <div class="problem-header" onclick="toggleBlock(this)">
+      <div class="problem-icon">06</div>
+      <div class="problem-title">Не понимаю, когда и как нанимать помощников</div>
+      <div class="problem-arrow">▼</div>
+    </div>
+    <div class="problem-body">
+      <p class="problem-what">Хочется делегировать. Но страшно: а вдруг не потяну? Или нанимаешь — и не понимаешь, влезает ли в бюджет.</p>
+      <p class="problem-why">Решение принимается на эмоциях, а не на цифрах. Потом оказывается, что при текущей выручке помощник «съедает» всю прибыль.</p>
+      <div class="steps-title">Что делать</div>
+      <ul class="steps-list">
+        <li><div class="step-dot">1</div>Впиши в финмодель стоимость помощника — даже если его ещё нет</li>
+        <li><div class="step-dot">2</div>Посмотри: что происходит с прибылью? Если не падает в минус — можешь себе позволить</li>
+        <li><div class="step-dot">3</div>Лайфхак: сначала заложи «зарплату проджекта» себе. Когда появится реальный человек — место в бюджете уже есть</li>
+      </ul>
+      <div class="limit-box"><strong>Где упрёшься</strong>Ставки на рынке сильно отличаются. Ассистент, куратор, технический специалист — у каждого своя рыночная цена. Без понимания этого модель может оказаться нереалистичной.</div>
+    </div>
+  </div>
+
+  <!-- Block 7 -->
+  <div class="problem-block">
+    <div class="problem-header" onclick="toggleBlock(this)">
+      <div class="problem-icon">07</div>
+      <div class="problem-title">Нет сценариев — ни оптимистичного, ни пессимистичного</div>
+      <div class="problem-arrow">▼</div>
+    </div>
+    <div class="problem-body">
+      <p class="problem-what">Строишь одну модель — «как я хочу». Но жизнь редко идёт по плану.</p>
+      <p class="problem-why">Если реальность расходится с ожиданиями — паника, разочарование, ощущение провала. Хотя на самом деле всё нормально — просто не был готов к другому сценарию.</p>
+      <div class="steps-title">Что делать</div>
+      <ul class="steps-list">
+        <li><div class="step-dot">1</div>Построй три варианта: оптимистичный, реалистичный (−30% к доходам) и пессимистичный</li>
+        <li><div class="step-dot">2</div>Для каждого варианта ответь: «Как я с этим справлюсь?»</li>
+        <li><div class="step-dot">3</div>Пессимистичный сценарий — это не катастрофа, это план Б</li>
+      </ul>
+      <div class="limit-box"><strong>Где упрёшься</strong>Оценка рисков — отдельный навык. Посчитать цифры просто, правильно интерпретировать и принять решение — сложнее.</div>
+    </div>
+  </div>
+</div>
+
+<div class="ornament">✦ &nbsp; ✦ &nbsp; ✦</div>
+
+<!-- SECTION 4: ДИАГНОСТИКА -->
+<div class="section">
+  <p class="section-num">— 04 / Мини-диагностика</p>
+  <h2 class="section-title">Честная<br><em>проверка</em></h2>
+
+  <p class="diagnostic-intro">Ответь «да» или «нет». Нажми на каждый пункт, с которым ты согласен(а). В конце получишь результат.</p>
+
+  <ul class="diag-list">
+    <li class="diag-item" onclick="toggleCheck(this)">
+      <div class="diag-check"><svg width="10" height="8" viewBox="0 0 10 8"><path d="M1 4L3.5 6.5L9 1" stroke="#0A0A0A" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>
+      <span class="diag-text">У меня есть финансовая модель хотя бы в таблице (не в голове)</span>
+    </li>
+    <li class="diag-item" onclick="toggleCheck(this)">
+      <div class="diag-check"><svg width="10" height="8" viewBox="0 0 10 8"><path d="M1 4L3.5 6.5L9 1" stroke="#0A0A0A" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>
+      <span class="diag-text">Я знаю точную цифру всех расходов бизнеса за последний месяц</span>
+    </li>
+    <li class="diag-item" onclick="toggleCheck(this)">
+      <div class="diag-check"><svg width="10" height="8" viewBox="0 0 10 8"><path d="M1 4L3.5 6.5L9 1" stroke="#0A0A0A" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>
+      <span class="diag-text">Я разделяю личные деньги и деньги бизнеса</span>
+    </li>
+    <li class="diag-item" onclick="toggleCheck(this)">
+      <div class="diag-check"><svg width="10" height="8" viewBox="0 0 10 8"><path d="M1 4L3.5 6.5L9 1" stroke="#0A0A0A" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>
+      <span class="diag-text">Я понимаю, откуда придут клиенты в следующем месяце и сколько их будет</span>
+    </li>
+    <li class="diag-item" onclick="toggleCheck(this)">
+      <div class="diag-check"><svg width="10" height="8" viewBox="0 0 10 8"><path d="M1 4L3.5 6.5L9 1" stroke="#0A0A0A" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>
+      <span class="diag-text">Я знаю, сколько стоит привлечение одного клиента в моём проекте</span>
+    </li>
+    <li class="diag-item" onclick="toggleCheck(this)">
+      <div class="diag-check"><svg width="10" height="8" viewBox="0 0 10 8"><path d="M1 4L3.5 6.5L9 1" stroke="#0A0A0A" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>
+      <span class="diag-text">Я закладываю налоги и комиссии сервисов в расходы заранее</span>
+    </li>
+    <li class="diag-item" onclick="toggleCheck(this)">
+      <div class="diag-check"><svg width="10" height="8" viewBox="0 0 10 8"><path d="M1 4L3.5 6.5L9 1" stroke="#0A0A0A" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>
+      <span class="diag-text">Я умею отличать прибыль от реального поступления денег на счёт</span>
+    </li>
+    <li class="diag-item" onclick="toggleCheck(this)">
+      <div class="diag-check"><svg width="10" height="8" viewBox="0 0 10 8"><path d="M1 4L3.5 6.5L9 1" stroke="#0A0A0A" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>
+      <span class="diag-text">У меня есть финансовая подушка — минимум на 1–2 месяца работы без дохода</span>
+    </li>
+    <li class="diag-item" onclick="toggleCheck(this)">
+      <div class="diag-check"><svg width="10" height="8" viewBox="0 0 10 8"><path d="M1 4L3.5 6.5L9 1" stroke="#0A0A0A" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>
+      <span class="diag-text">Я могу в любой момент сказать: мой бизнес сейчас прибыльный или нет</span>
+    </li>
+    <li class="diag-item" onclick="toggleCheck(this)">
+      <div class="diag-check"><svg width="10" height="8" viewBox="0 0 10 8"><path d="M1 4L3.5 6.5L9 1" stroke="#0A0A0A" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>
+      <span class="diag-text">Я строила хотя бы два сценария — оптимистичный и пессимистичный</span>
+    </li>
+  </ul>
+
+  <div class="diag-score">
+    <div class="score-label">Результат</div>
+    <div class="score-number" id="scoreNum">0 / 10</div>
+    <div class="score-result" id="scoreText">Нажми на пункты выше, чтобы отметить то, что уже есть в твоём бизнесе.</div>
+  </div>
+</div>
+
+<div class="ornament">✦ &nbsp; ✦ &nbsp; ✦</div>
+
+<!-- SECTION 5: ПЛАН -->
+<div class="section">
+  <p class="section-num">— 05 / Первые шаги</p>
+  <h2 class="section-title">Твои первые<br><em>7 дней</em></h2>
+
+  <div class="days-grid">
+    <div class="day-item">
+      <div class="day-num">день<span>1</span></div>
+      <div class="day-text">Выпиши все расходы за прошлый месяц прямо из банковской выписки. Без анализа — просто список.</div>
+    </div>
+    <div class="day-item">
+      <div class="day-num">день<span>2</span></div>
+      <div class="day-text">Раздели расходы на категории: сервисы, реклама, налоги, личные нужды из бизнеса, прочее.</div>
+    </div>
+    <div class="day-item">
+      <div class="day-num">день<span>3</span></div>
+      <div class="day-text">Посчитай реальную выручку за месяц — с учётом того, за какой период реально оказана услуга.</div>
+    </div>
+    <div class="day-item">
+      <div class="day-num">день<span>4</span></div>
+      <div class="day-text">Вычти расходы из выручки. Это твоя честная прибыль. Сравни с ощущением — часто они не совпадают.</div>
+    </div>
+    <div class="day-item">
+      <div class="day-num">день<span>5</span></div>
+      <div class="day-text">Задай себе вопрос: «Откуда придут клиенты в следующем месяце?» Запиши конкретные каналы и примерное количество.</div>
+    </div>
+    <div class="day-item">
+      <div class="day-num">день<span>6</span></div>
+      <div class="day-text">Впиши в таблицу план на следующий месяц: сколько клиентов, по какой цене, какие расходы.</div>
+    </div>
+    <div class="day-item">
+      <div class="day-num">день<span>7</span></div>
+      <div class="day-text">Сравни план с тем, что реально происходит. Что расходится? Это и есть твоя точка роста.</div>
+    </div>
+  </div>
+</div>
+
+<div class="ornament">✦ &nbsp; ✦ &nbsp; ✦</div>
+
+<!-- SECTION 6: ТОЧКА ПЕРЕЛОМА -->
+<div class="section">
+  <p class="section-num">— 06 / Точка перелома</p>
+  <h2 class="section-title">Где чаще всего<br><em>ломается</em></h2>
+
+  <div class="breakdown-list">
+    <div class="breakdown-item">
+      <div class="breakdown-title">«Я всё посчитал — но не знаю, правильно ли»</div>
+      <p class="breakdown-text">Таблица есть, цифры есть — но уверенности нет. И это мешает принимать решения: нанимать или нет, повышать цену или нет, запускаться сейчас или подождать.</p>
+    </div>
+    <div class="breakdown-item">
+      <div class="breakdown-title">«Я посчитал прибыль, но не учёл кассовый разрыв»</div>
+      <p class="breakdown-text">Бывает, что прибыль есть, а деньги кончились. Потому что оплаты за следующий период ещё не пришли, а расходы уже есть. И это застаёт врасплох.</p>
+    </div>
+    <div class="breakdown-item">
+      <div class="breakdown-title">«Я не заложил расходы на привлечение клиентов»</div>
+      <p class="breakdown-text">Самая частая ошибка. Кажется: «сначала бесплатно, потом подключу рекламу». Но когда приходит время — денег на рекламу нет, потому что всё ушло на операционку.</p>
+    </div>
+    <div class="breakdown-item">
+      <div class="breakdown-title">«Модель построил, но не обновляю»</div>
+      <p class="breakdown-text">Финмодель — живой инструмент. Если смотреть на неё раз в полгода, она перестаёт отражать реальность и теряет смысл. Нужен регулярный ритм.</p>
+    </div>
+  </div>
+
+  <p style="font-family: var(--serif); font-style: italic; font-size: 1.05rem; color: var(--gold-dim); margin-top: 2.5rem; line-height: 1.8; border-left: 2px solid var(--gold-dim); padding-left: 1.25rem;">
+    Если ты узнал(а) себя хотя бы в одном пункте — это сигнал: нужен не просто план, а система и внешний взгляд специалиста.
+  </p>
+</div>
+
+<div class="ornament">✦ &nbsp; ✦ &nbsp; ✦</div>
+
+<!-- SECTION 7: ОФФЕР -->
+<div class="section">
+  <p class="section-num">— 07 / Следующий шаг</p>
+  <h2 class="section-title">Когда стоит<br><em>обратиться за помощью</em></h2>
+
+  <div class="offer-block">
+    <div class="offer-for-title">Тебе подойдёт работа со специалистом, если</div>
+    <ul class="offer-list">
+      <li>Ты запускаешь новый продукт и хочешь сразу выстроить финмодель правильно</li>
+      <li>Есть выручка, но непонятно, куда уходят деньги</li>
+      <li>Собираешься нанимать команду и хочешь понять, потянешь ли</li>
+      <li>Уже посчитал(а) сам(а), но не уверен(а) в правильности</li>
+      <li>Хочешь выстроить систему учёта раз и навсегда</li>
+    </ul>
+
+    <div class="offer-divider"></div>
+
+    <div class="offer-get-title">Что ты получишь</div>
+    <ul class="offer-list">
+      <li>Финансовую модель под твой конкретный проект — с реальными цифрами, а не шаблонными</li>
+      <li>Понимание, сколько и когда ты заработаешь при разных сценариях</li>
+      <li>Ответ на вопрос «могу ли я позволить себе этого помощника / эту рекламу»</li>
+      <li>Структуру учёта, которую легко вести самостоятельно дальше</li>
+    </ul>
+
+    <div class="offer-divider"></div>
+
+    <p style="font-size: 0.6rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.5rem; font-weight: 500;">Формат</p>
+    <p style="font-size: 0.85rem; color: var(--white-dim); line-height: 1.8;">Консультация 1,5 часа — разбор твоей ситуации, проверка модели или построение с нуля. Можно продолжить в формате сопровождения.</p>
+
+    <a href="#" class="offer-cta">Записаться на консультацию <span class="cta-arrow">→</span></a>
+  </div>
+</div>
+
+<!-- CLOSING -->
+<div class="closing section">
+  <div class="gold-line" style="margin-bottom: 3rem;"></div>
+  <p class="closing-quote">Финансы — это не страшно.<br>Это просто <em>цифры</em>, которые рассказывают тебе правду о твоём деле.</p>
+  <p class="closing-sub">Сделай первый шаг сегодня</p>
+  <div class="gold-line"></div>
+
+  <p style="margin-top: 3rem; font-size: 0.75rem; color: var(--white-dim); max-width: 400px; margin-left: auto; margin-right: auto; line-height: 1.9; font-style: italic; font-family: var(--serif);">
+    Этот гайд создан на основе реальных сессий с предпринимателями и экспертами. Все ситуации — настоящие. Все ошибки — типичные. Все решения — рабочие.
+  </p>
+</div>
+
+<footer>
+  © Сам себе финансист &nbsp;·&nbsp; Практический гайд
+</footer>
+
+<script>
+  // Toggle problem blocks
+  function toggleBlock(header) {
+    const body = header.nextElementSibling;
+    const isOpen = header.classList.contains('open');
+    // Close all
+    document.querySelectorAll('.problem-header.open').forEach(h => {
+      h.classList.remove('open');
+      h.nextElementSibling.classList.remove('open');
+    });
+    // Open this one if it was closed
+    if (!isOpen) {
+      header.classList.add('open');
+      body.classList.add('open');
+    }
+  }
+
+  // Diagnostic checkboxes
+  function toggleCheck(item) {
+    item.classList.toggle('checked');
+    updateScore();
+  }
+
+  function updateScore() {
+    const total = document.querySelectorAll('.diag-item').length;
+    const checked = document.querySelectorAll('.diag-item.checked').length;
+    document.getElementById('scoreNum').textContent = checked + ' / ' + total;
+
+    let text = '';
+    let color = '';
+    if (checked <= 3) {
+      text = 'Пока всё держится на интуиции. Это работает... до первого кассового разрыва. Есть над чем поработать — и это хорошая новость.';
+      color = '#9a6040';
+    } else if (checked <= 6) {
+      text = 'Есть понимание, но есть и слепые зоны. Именно в них прячутся потери. Стоит разобраться с тем, что отмечено не было.';
+      color = '#9a8040';
+    } else {
+      text = 'Ты молодец. Даже если всё хорошо — один внешний взгляд иногда показывает то, что сам не замечаешь.';
+      color = 'var(--gold)';
+    }
+
+    const scoreEl = document.getElementById('scoreNum');
+    scoreEl.style.color = color;
+    document.getElementById('scoreText').textContent = text;
+  }
+
+  // Scroll reveal
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.section').forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
